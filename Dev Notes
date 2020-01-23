@@ -1,0 +1,60 @@
+/chatter/feed-elements/feedElementId/capabilities/bookmarks
+
+e.g.
+/services/data/v48.0/chatter/feed-elements/0D5B0000010S9cHKAS/capabilities/bookmarks
+
+Body
+{
+  "isBookmarkedByCurrentUser" : false
+}
+
+isBookmarkedByCurrentUser set to true to bookmark, false to unbookmark
+
+
+query 
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_query.htm
+https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_query.htm
+
+curl https://yourInstance.salesforce.com/services/data/v48.0/query/?q=SELECT+name+from+Account -H "Authorization: Bearer token"
+
+- Can't query FeedItem without VAD
+
+Alternative - https://developer.salesforce.com/docs/atlas.en-us.chatterapi.meta/chatterapi/quickreference_get_feed_items_posted_to_record.htm
+
+e.g. /services/data/v48.0/chatter/feeds/record/a07B0000006vx5NIAQ/feed-elements
+
+elements contains all the feed item Ids
+
+Javscript scroll to bottom
+var scrollingElement = (document.scrollingElement || document.body);
+scrollingElement.scrollTop = scrollingElement.scrollHeight;
+
+to top
+scrollingElement.scrollTop = 0;
+
+setTimeout(function(){ scrollingElement.scrollTop = 0; }, 5000);
+
+jump to bottom and back
+var scrollingElement = (document.scrollingElement || document.body);
+scrollingElement.scrollTop = scrollingElement.scrollHeight;
+setTimeout(function(){ scrollingElement.scrollTop = 0; }, 50);
+
+
+cuf-feedElementIterationItem slds-feed__item = feed element class tag  (224)
+
+cuf-feedElement (feedElements)
+cuf-feedElement cuf-feedItem (feedElements of feedItem type)
+cuf-feedElement cuf-clumpItem (feedElements of clumpItem type)
+
+//get the feed items from the dom
+var doc = document.getElementsByClassName("cuf-feedElement cuf-feedItem")
+//get the attribute Id for the first value in the list
+doc[0].getAttribute("data-id")
+//need to loop through the doc var, storing all data-id's in a list for later
+//create array
+var postIds=[]
+//check array length
+postIds.length
+//push values to array
+postIds.push(doc[0].getAttribute("data-Id"))
+
