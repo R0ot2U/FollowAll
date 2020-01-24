@@ -58,3 +58,11 @@ postIds.length
 //push values to array
 postIds.push(doc[0].getAttribute("data-Id"))
 
+Chrome extension salesforce tutorial
+https://github.com/dieffrei/salesforce-chrome-extension-tutorial
+
+Force.com Javscript REST API Toolkit
+https://github.com/developerforce/Force.com-JavaScript-REST-Toolkit
+
+Session ID for REST
+https://developer.salesforce.com/forums/?id=906F00000008qreIAA
