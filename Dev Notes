@@ -77,6 +77,10 @@ https://developer.salesforce.com/forums/?id=906F00000008qreIAA
 224 GET sid from cookie
 document.cookie.match(/(^|;\s*)sid=(.+?);/)[2];
 
+sid example 00D3V000000AnsK!ARQAQATOxHG3VDOZCcRtKJcLtLA__vhW5rs6U17MFWiT4y0s.ikyQyoWy8ys1ubvvpebqxMyaFIxpRQXYZzYjv7ymTgJcpLb
+
+String sessionid=00D3V000000AnsK!ARQAQATOxHG3VDOZCcRtKJcLtLA__vhW5rs6U17MFWiT4y0s.ikyQyoWy8ys1ubvvpebqxMyaFIxpRQXYZzYjv7ymTgJcpLb
+
 Content policy 
 $.ajax({
     type: "GET",
@@ -92,3 +96,8 @@ $.ajax({
 Refused to connect to 'https://gus.my.salesforce.com/services/data/v48.0/chatter/feeds/record/a07B0000006vx5NIAQ/feed-elements' because it violates the following Content Security Policy directive: "connect-src 'self' https://api.bluetail.salesforce.com https://staging.bluetail.salesforce.com https://preprod.bluetail.salesforce.com https://api.status.salesforce.com https://testmanager.test-exacttarget.com https://testmanager.exacttarget.com https://lunadas.soma.salesforce.com https://ops0-cpt1-1-xrd.eng.sfdc.net:9876 https://ciab-admin-1.eng.sfdc.net:5000 *.gus.visual.force.com https://gus--c.gus.content.force.com https://gs0.salesforce.com".
 
 Look into Lightning Labs - https://git.soma.salesforce.com/lightning-labs/lightning-labs
+
+
+From https://git.soma.salesforce.com/akeane/SupportQuickActions
+
+User Guide https://salesforce.quip.com/PDK0ATXWKSat

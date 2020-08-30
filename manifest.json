@@ -1,23 +1,63 @@
 {
-    "manifest_version": 2,
-  
-    "name": "Work Follow All Extension",
-    "description": "This extension will allow follow all actions on Work record feed items",
-    "version": "1.0",
-
-    "background": {
-        "scripts": ["background.js"],
-        "persistent": false
-      },
-  
-    "page_action": {
-     "default_icon": "icon.png",
-     "default_popup": "popup.html"
-    },
-    "permissions": [
-     "activeTab",
-     "storage",
-     "tabs",
-     "declarativeContent"
-     ]
-  }
+	"name": "Work Follow All",
+	"version": "1.0",
+	"manifest_version": 2,
+	"content_security_policy": "script-src 'self' ; object-src 'self'",
+	"description": "Follow all work feed posts",
+	"browser_action": {
+		"default_icon": "icon.png",
+		"default_title": "Follow All",
+		"default_popup": "popup.html"
+	},
+	"icons": {
+		"16": "icon.png",
+		"32": "icon.png"
+	},
+	"permissions": [
+		"contextMenus",
+		"tabs",
+		"activeTab",
+		"cookies",
+		"storage",
+		"clipboardWrite",
+		"clipboardRead",
+		"webNavigation",
+		"https://org62.my.salesforce.com/*",
+		"https://org62.lightning.force.com/*",
+    	"https://gus.my.salesforce.com/*",
+    	"https://developmentsp-dev-ed.lightning.force.com/*",
+    	"https://developmentsp-dev-ed.my.salesforce.com/*"
+	],
+	"background": {
+		"scripts": [
+			"jquery.js",
+			"background.js"
+		]
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://org62.my.salesforce.com/*",
+				"https://org62.lightning.force.com/*",
+        		"https://gus.my.salesforce.com/*",
+        		"https://developmentsp-dev-ed.lightning.force.com/*",
+        		"https://developmentsp-dev-ed.my.salesforce.com/*"
+			],
+			"js": [
+				"content-script.js"
+			]
+		}
+	],
+	"web_accessible_resources": [
+		"slds/assets/icons/utility/*"
+	],
+	"commands": {
+		"_execute_browser_action": {
+			"suggested_key": {
+				"default": "Alt+T",
+				"mac": "Alt+T",
+				"linux": "Alt+T"
+			}
+		}
+	}
+}

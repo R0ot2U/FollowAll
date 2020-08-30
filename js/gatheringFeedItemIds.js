@@ -15,7 +15,7 @@ function jumpDownAndUp() {
     var scrollingElement = (document.scrollingElement || document.body);
     scrollingElement.scrollTop = scrollingElement.scrollHeight;
     setTimeout(function(){ scrollingElement.scrollTop = 0; }, 10);
-},
+}
 
 function returnFeedIds() {
 
