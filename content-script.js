@@ -40,67 +40,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		//for loop and based on the check array length
 		for(i=0;i<doc.length;i++) {
 			console.log(doc[i].getAttribute("data-id"));
-			if (doc[i].getAttribute("data-id") != null) {
+			if (doc[i].getAttribute("data-id") != null && doc[i].getAttribute("data-type") == "TextPost" ) {
 				//push values to array
 				postIds.push(doc[i].getAttribute("data-Id"));
 			}
 		}
 		console.log('postIds: '+postIds);
 		//return postIds;
+		chrome.runtime.sendMessage({ msg: "updatePostIds" }, function () { });
 	}
 
-	if (request.msg === 'generate_login') {
-
-		console.log("Generating login")
-
-		var buttons = document.querySelectorAll('button');
-		for (var i = 0, l = buttons.length; i < l; i++) {
-			//console.log("Button last child value: "+buttons[i].innerHTML)
-			if (buttons[i].innerHTML.includes("Generate Login Access URL")) {
-				console.log("Found button")
-				buttons[i].click();
-			}
-		}
+	if (request.msg === 'jumpUpAndDown') {
 
 	}
-
-	if (request.msg.includes('get_comment_link')) {
-
-		console.log("Received comment link request");
-
-		// Lightning console
-		if (commentURL !== null) {
-
-			var oArg = new Object();
-			oArg.Document = commentURL;
-			prompt("Copy to clipboard: Ctrl/Cmd + c, Enter", oArg.Document);
-
-			commentURL = null;
-			oArg.Document = null;
-		}
-		// New UAC (Possibly needs improvement) 
-		else if (request.msg.includes('0D5')) {
-
-			var res = request.msg.match(/0D5.{12}/g);
-			commentURL = "https://org62.lightning.force.com/one/one.app#/sObject/" + res + "/view";
-
-			var oArg = new Object();
-			oArg.Document = commentURL;
-			prompt("Copy to clipboard: Ctrl/Cmd + c, Enter", commentURL);
-
-			commentURL = null;
-			oArg.Document = null;
-
-
-		} else {
-			alert("No comment link found here")
-		}
-	}
-
-	if (request.msg === 'get_case_details') {
-
-		clickedEl.value = request.text;
-
-	}
-
 });

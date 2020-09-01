@@ -47,32 +47,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
-// Case Details popup
-function opencasedetails(info, tab) {
-
-	var w = 400;
-	var h = 400;
-	var left = (screen.width / 2) - (w / 2);
-	var top = (screen.height / 2) - (h / 2);
-
-	chrome.tabs.create({
-		url: chrome.extension.getURL('casedetails.html'),
-		active: false
-	}, function (tab) {
-		// After the tab has been created, open a window to inject the tab
-		chrome.windows.create({
-			tabId: tab.id,
-			type: 'popup',
-			focused: true,
-			height: h,
-			width: w,
-			'left': left,
-			'top': top
-
-		});
-	});
-}
-
 //loading all feed posts
 function jumpDownAndUp() {
 	console.log('Jumping');
@@ -87,28 +61,37 @@ function jumpDownAndUp() {
 
 }
 
-
-// Case details query
-var basequery = 'SELECT Id FROM agf__ADM_Work__c WHERE ';
+// Follow All 
+//var basequery = 'SELECT Id FROM agf__ADM_Work__c WHERE ';
 
 function followAll(info, tab) {
 
 	jumpDownAndUp();
 
+	setTimeout(function(){
 	chrome.tabs.sendMessage(tab.id, { msg: "getFeedIds" });
-
+	}, 200);
 
 	var type = "followAll";
+
+	/* 
 	var workidentifier = null;
 	var query = basequery;
+	*/
 
 	if (info !== null && info.menuItemId === "workDetailsPage") {
 
+		/*
 		console.log("Getting work details from current page");
 		var taburl = "" + tab.url;
 		workidentifier = ' id =   \'' + taburl.match(/a1D.{15}/g) + '\'';
 		query +=workidentifier;
 		soqlapi(info, tab, query, type);
+		*/
+
+		//need a for loop for the bookmarks depending on returned postIds
+
+		chatterapi(info, tab, type);
 
 	} else if (info !== null && info.linkUrl !== null && info.menuItemId === "caseDetailsLink") {
 
@@ -125,6 +108,7 @@ function followAll(info, tab) {
 // Run all soql queries through this function
 function soqlapi(info, tab, query, type) {
 	console.log("query is: " + query)
+	console.log("encoded query is: "+encodeURIComponent(query));
 
 	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/query/?q=" + encodeURIComponent(query);
 
@@ -165,4 +149,80 @@ function soqlResultHandler(response) {
 	console.log("Got soql response: " + response);
 
 
+}
+
+// Run all soql queries through this function
+function chatterapi(info, tab, type) {
+	//console.log("query is: " + query)
+
+	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/feed-elements/0D53V00000Y6hELSAZ/capabilities/bookmarks";
+
+	var patchExample = {
+		"isBookmarkedByCurrentUser" : true
+	  };
+
+	$.ajax({
+		url: url,
+		method: 'PATCH',
+		data: JSON.stringify(patchExample),
+		contentType: 'application/json;charset=UTF-8',
+		dataType: 'json',
+		beforeSend: function (xhr) {
+			xhr.setRequestHeader("Authorization", "Bearer " + sid);
+		},
+		success: function (result) {
+			if (type == 'followAll') {
+				if (result) {
+					console.log(result);
+				} else {
+					alert("You are not on a work item or case")
+					console.log('You are not on a work item or case');
+				}
+			} else if (type == 'unfollowAll') {
+				if (result) {
+					console.log('unfollowing posts');
+				} else {
+					alert("Something went wrong, possibly not on case page");
+				}
+			}
+		},
+		error: function (jqXHR, textStatus, errorThrown) {
+			alert("Error: " + errorThrown)
+			console.log(jqXHR.status + ' : ' + errorThrown);
+		}
+	});
+}
+
+
+function chatterrestResultHandler(response) {
+
+	console.log("Got chatter response: " + response);
+
+
+}
+
+// Case Details popup
+function opencasedetails(info, tab) {
+
+	var w = 400;
+	var h = 400;
+	var left = (screen.width / 2) - (w / 2);
+	var top = (screen.height / 2) - (h / 2);
+
+	chrome.tabs.create({
+		url: chrome.extension.getURL('casedetails.html'),
+		active: false
+	}, function (tab) {
+		// After the tab has been created, open a window to inject the tab
+		chrome.windows.create({
+			tabId: tab.id,
+			type: 'popup',
+			focused: true,
+			height: h,
+			width: w,
+			'left': left,
+			'top': top
+
+		});
+	});
 }
