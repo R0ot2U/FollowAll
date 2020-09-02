@@ -47,62 +47,32 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
-//loading all feed posts
-function jumpDownAndUp() {
-	console.log('Jumping');
-
-	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-	chrome.tabs.executeScript(tabs[0].id, {code:
-			"var scrollingElement = (document.scrollingElement || document.body);" +
-			"scrollingElement.scrollTop = scrollingElement.scrollHeight;" +
-			"setTimeout(function(){ scrollingElement.scrollTop = 0; }, 100);" 
-		})
-	})
-
-}
-
 // Follow All 
 //var basequery = 'SELECT Id FROM agf__ADM_Work__c WHERE ';
 
 function followAll(info, tab) {
 
-	jumpDownAndUp();
+	chrome.tabs.sendMessage(tab.id, { msg: "getFeedIds" },
+		(sendResponse) => {
+			if (sendResponse) {
+				var type = "followAll";
+				var postIds = sendResponse;
+				console.log('inside function: '+postIds);
 
-	setTimeout(function(){
-	chrome.tabs.sendMessage(tab.id, { msg: "getFeedIds" });
-	}, 200);
+				if (info !== null && info.menuItemId === "workDetailsPage") {
 
-	var type = "followAll";
+					//need a for loop for the bookmarks depending on returned postIds
+					for(var i=0;i<postIds.length; i++){
+						console.log(postIds[i]);
+						var postId = postIds[i];
+						chatterapi(info, tab, type, postId);
+					}
+				} else {
+					alert("No case details found")
+				}
 
-	/* 
-	var workidentifier = null;
-	var query = basequery;
-	*/
-
-	if (info !== null && info.menuItemId === "workDetailsPage") {
-
-		/*
-		console.log("Getting work details from current page");
-		var taburl = "" + tab.url;
-		workidentifier = ' id =   \'' + taburl.match(/a1D.{15}/g) + '\'';
-		query +=workidentifier;
-		soqlapi(info, tab, query, type);
-		*/
-
-		//need a for loop for the bookmarks depending on returned postIds
-
-		chatterapi(info, tab, type);
-
-	} else if (info !== null && info.linkUrl !== null && info.menuItemId === "caseDetailsLink") {
-
-	} else if (info !== null && info.selectionText !== null && info.menuItemId === "caseDetailsSelection") {
-
-	} else if (info !== null && info.menuItemId === "caseDetailsSearch") {
-
-	} else {
-		alert("No case details found")
-	}
-
+			}
+		});
 }
 
 // Run all soql queries through this function
@@ -152,10 +122,17 @@ function soqlResultHandler(response) {
 }
 
 // Run all soql queries through this function
-function chatterapi(info, tab, type) {
+function chatterapi(info, tab, type, postId) {
 	//console.log("query is: " + query)
+	console.log('in chatter: '+postId);
 
-	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/feed-elements/0D53V00000Y6hELSAZ/capabilities/bookmarks";
+	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/";
+
+	if (type == 'followAll') {
+		url+="feed-elements/"+postId+"/capabilities/bookmarks";
+	}
+
+	console.log('modified url is: '+url);
 
 	var patchExample = {
 		"isBookmarkedByCurrentUser" : true

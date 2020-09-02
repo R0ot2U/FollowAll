@@ -22,11 +22,22 @@ document.body.addEventListener('mousedown', function (e) {
 
 });
 
+//loading all feed posts
+function jumpDownAndUp() {
+	console.log('Jumping');
+
+	var scrollingElement = (document.scrollingElement || document.body);
+	scrollingElement.scrollTop = scrollingElement.scrollHeight;
+	setTimeout(function(){ scrollingElement.scrollTop = 0; }, 100);
+}
+
 // receive message about context menu action
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	console.log("Message recieved in content script")
 
 	if (request.msg === 'getFeedIds') {
+
+		jumpDownAndUp();
 
 		//getting feed item ids
 		console.log('returning feeds');
@@ -47,7 +58,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		}
 		console.log('postIds: '+postIds);
 		//return postIds;
-		chrome.runtime.sendMessage({ msg: "updatePostIds" }, function () { });
+		sendResponse(postIds);
 	}
 
 	if (request.msg === 'jumpUpAndDown') {
