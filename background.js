@@ -1,10 +1,17 @@
 ///// Case Details /////
 
 chrome.contextMenus.create({
-	title: "Query Work",
+	title: "Follow All",
 	contexts: ["page"],
 	onclick: followAll,
-	id: "workDetailsPage"
+	id: "followAll"
+});
+
+chrome.contextMenus.create({
+	title: "UnFollow All",
+	contexts: ["page"],
+	onclick: followAll,
+	id: "unfollowAll"
 });
 
 ////////////////////////////
@@ -47,9 +54,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
-// Follow All 
-//var basequery = 'SELECT Id FROM agf__ADM_Work__c WHERE ';
-
 function followAll(info, tab) {
 
 	chrome.tabs.sendMessage(tab.id, { msg: "getFeedIds" },
@@ -57,18 +61,16 @@ function followAll(info, tab) {
 			if (sendResponse) {
 				var type = "followAll";
 				var postIds = sendResponse;
-				console.log('inside function: '+postIds);
 
-				if (info !== null && info.menuItemId === "workDetailsPage") {
+				if (info !== null && (info.menuItemId === "followAll" || info.menuItemId === "unfollowAll")) {
 
 					//need a for loop for the bookmarks depending on returned postIds
 					for(var i=0;i<postIds.length; i++){
-						console.log(postIds[i]);
 						var postId = postIds[i];
 						chatterapi(info, tab, type, postId);
 					}
 				} else {
-					alert("No case details found")
+					alert("ERROR check the console log")
 				}
 
 			}
@@ -76,6 +78,7 @@ function followAll(info, tab) {
 }
 
 // Run all soql queries through this function
+// Not usef at the moment
 function soqlapi(info, tab, query, type) {
 	console.log("query is: " + query)
 	console.log("encoded query is: "+encodeURIComponent(query));
@@ -93,10 +96,9 @@ function soqlapi(info, tab, query, type) {
 		success: function (result) {
 			if (type == 'followAll') {
 				if (result && result.records[0]) {
-					console.log(result.records[0]);
+					//console.log(result.records[0]);
 				} else {
-					alert("You are not on a work item or case")
-					console.log('You are not on a work item or case');
+					alert("You are not on a work item or case");
 				}
 			} else if (type == 'gus_links') {
 				if (result && result.records[0]) {
@@ -123,43 +125,52 @@ function soqlResultHandler(response) {
 
 // Run all soql queries through this function
 function chatterapi(info, tab, type, postId) {
-	//console.log("query is: " + query)
-	console.log('in chatter: '+postId);
-
+	console.log('Chatter API called');
+	
+	// variables for later
+	var patchData
+	var bookmarkJson = {"isBookmarkedByCurrentUser" : true};
 	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/";
-
+	
+	//formatting the url for bookmarks and appending postId
+	//doesn't look like we can bulk request this
+	//adding more chatter functions here will need to look at other check
 	if (type == 'followAll') {
 		url+="feed-elements/"+postId+"/capabilities/bookmarks";
+		if (info.menuItemId === "followAll") {
+			bookmarkJson.isBookmarkedByCurrentUser = true;
+		}
+			else if(info.menuItemId === "unfollowAll") {
+				bookmarkJson.isBookmarkedByCurrentUser = false;
+			}
+			else {
+				alert('Error check console log');
+			}
+		patchData = bookmarkJson;
+		console.log('Chatter URL: '+url);
 	}
-
-	console.log('modified url is: '+url);
-
-	var patchExample = {
-		"isBookmarkedByCurrentUser" : true
-	  };
 
 	$.ajax({
 		url: url,
 		method: 'PATCH',
-		data: JSON.stringify(patchExample),
+		data: JSON.stringify(patchData),
 		contentType: 'application/json;charset=UTF-8',
 		dataType: 'json',
 		beforeSend: function (xhr) {
 			xhr.setRequestHeader("Authorization", "Bearer " + sid);
 		},
 		success: function (result) {
-			if (type == 'followAll') {
+			if (type == 'followAll' && info.menuItemId === "unfollowAll") {
 				if (result) {
-					console.log(result);
+					console.log('Unfollowing All Posts');
 				} else {
-					alert("You are not on a work item or case")
-					console.log('You are not on a work item or case');
+					console.log('Error please check console log');
 				}
-			} else if (type == 'unfollowAll') {
+			} else if (type == 'followAll' && info.menuItemId === "unfollowAll") {
 				if (result) {
-					console.log('unfollowing posts');
+					console.log('Following All Posts');
 				} else {
-					alert("Something went wrong, possibly not on case page");
+					alert("Error please check console log");
 				}
 			}
 		},
@@ -170,36 +181,9 @@ function chatterapi(info, tab, type, postId) {
 	});
 }
 
-
 function chatterrestResultHandler(response) {
 
 	console.log("Got chatter response: " + response);
 
 
-}
-
-// Case Details popup
-function opencasedetails(info, tab) {
-
-	var w = 400;
-	var h = 400;
-	var left = (screen.width / 2) - (w / 2);
-	var top = (screen.height / 2) - (h / 2);
-
-	chrome.tabs.create({
-		url: chrome.extension.getURL('casedetails.html'),
-		active: false
-	}, function (tab) {
-		// After the tab has been created, open a window to inject the tab
-		chrome.windows.create({
-			tabId: tab.id,
-			type: 'popup',
-			focused: true,
-			height: h,
-			width: w,
-			'left': left,
-			'top': top
-
-		});
-	});
 }

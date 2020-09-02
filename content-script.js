@@ -4,6 +4,8 @@ let clickedEl = null;
 //Context menu dodge function, after onload
 chrome.runtime.sendMessage({ msg: "context_dodge" }, function () { });
 
+jumpDownAndUp();
+
 // Right click functionality
 document.body.addEventListener('mousedown', function (e) {
 
@@ -28,7 +30,12 @@ function jumpDownAndUp() {
 
 	var scrollingElement = (document.scrollingElement || document.body);
 	scrollingElement.scrollTop = scrollingElement.scrollHeight;
-	setTimeout(function(){ scrollingElement.scrollTop = 0; }, 100);
+	setTimeout(function(){ 
+		scrollingElement.scrollTop = 0; 
+		console.log('in function');
+	}, 100);
+
+	console.log('finished jumping');
 }
 
 // receive message about context menu action
@@ -36,8 +43,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	console.log("Message recieved in content script")
 
 	if (request.msg === 'getFeedIds') {
-
-		jumpDownAndUp();
 
 		//getting feed item ids
 		console.log('returning feeds');
@@ -59,9 +64,5 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		console.log('postIds: '+postIds);
 		//return postIds;
 		sendResponse(postIds);
-	}
-
-	if (request.msg === 'jumpUpAndDown') {
-
 	}
 });
