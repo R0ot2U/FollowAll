@@ -107,3 +107,5 @@ FeedItems - SOAP - no go
 REST ! /services/data/v49.0/chatter/feeds/record/a1D3V000000GoS4UAK/feed-elements 
 
 returns all elements see feedRecordExampleJson.json
+
+doc: https://developer.salesforce.com/docs/atlas.en-us.chatterapi.meta/chatterapi/quickreference_get_feed_items_posted_to_record.htm
