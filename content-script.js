@@ -22,35 +22,9 @@ document.body.addEventListener('mousedown', function (e) {
 
 });
 
-//loading all feed posts
-function jumpDown() {
-	console.log('Jumping down');
-
-	var scrollingElement = (document.scrollingElement || document.body);
-	scrollingElement.scrollTop = scrollingElement.scrollHeight;
-
-	console.log('finished jumping down');
-}
-
-function jumpUp() {
-	console.log('Jumping up');
-
-	var scrollingElement = (document.scrollingElement || document.body);
-	setTimeout(function(){ 
-		scrollingElement.scrollTop = 0; 
-		console.log('in function');
-	}, 50);
-
-	console.log('finished jumping up');
-
-}
-
 // receive message about context menu action
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	console.log("Message recieved in content script")
-
-	jumpDown();
-	jumpUp();
 
 	if (request.msg === 'getFeedIds') {
 
