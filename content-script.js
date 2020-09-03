@@ -4,8 +4,6 @@ let clickedEl = null;
 //Context menu dodge function, after onload
 chrome.runtime.sendMessage({ msg: "context_dodge" }, function () { });
 
-jumpDownAndUp();
-
 // Right click functionality
 document.body.addEventListener('mousedown', function (e) {
 
@@ -25,22 +23,34 @@ document.body.addEventListener('mousedown', function (e) {
 });
 
 //loading all feed posts
-function jumpDownAndUp() {
-	console.log('Jumping');
+function jumpDown() {
+	console.log('Jumping down');
 
 	var scrollingElement = (document.scrollingElement || document.body);
 	scrollingElement.scrollTop = scrollingElement.scrollHeight;
+
+	console.log('finished jumping down');
+}
+
+function jumpUp() {
+	console.log('Jumping up');
+
+	var scrollingElement = (document.scrollingElement || document.body);
 	setTimeout(function(){ 
 		scrollingElement.scrollTop = 0; 
 		console.log('in function');
-	}, 100);
+	}, 50);
 
-	console.log('finished jumping');
+	console.log('finished jumping up');
+
 }
 
 // receive message about context menu action
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	console.log("Message recieved in content script")
+
+	jumpDown();
+	jumpUp();
 
 	if (request.msg === 'getFeedIds') {
 
@@ -65,4 +75,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		//return postIds;
 		sendResponse(postIds);
 	}
+
+	
 });
