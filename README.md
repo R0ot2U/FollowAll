@@ -1,10 +1,8 @@
 # FollowAll
-Follow all top level posts in a work record
+Follow all top level posts in a record
 
-## Work Items Supported:
-* Investigation (Not Started)
-* Bug (Not Started)
-* User Story (Not Started)
+## Objects Supported:
+* Work (ADM_Work__c)
 
 ## Features Planned:
 * Follow All UI Button

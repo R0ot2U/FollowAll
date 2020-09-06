@@ -33,94 +33,27 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	// Don't confuse this with the context dodge listener
 	if (typeof request.msg !== 'undefined') {
 
-      if (request.msg.startsWith("caseDetails")) {
-
-		} else if (request.msg === "current_case_details") {
-
-		} else if (request.msg === "context_dodge") {
+      if (request.msg === "context_dodge") {
 
 			console.log("Context Menu Dodge Received!");
 
 			chrome.cookies.get({ "url": "https://developmentsp-dev-ed.my.salesforce.com", "name": "sid" }, function (f) {
 				sid = f.value;
-      });
-      
-      
-
+	  		});
+	  
 		}
 		else {
-
+			console.log('We\'ve got an error over here');
 		}
   }
 });
 
-function followAll(info, tab) {
-
-	chrome.tabs.sendMessage(tab.id, { msg: "getFeedIds" },
-		(sendResponse) => {
-			if (sendResponse) {
-				var type = "followAll";
-				var postIds = sendResponse;
-
-				if (info !== null && (info.menuItemId === "followAll" || info.menuItemId === "unfollowAll")) {
-
-					//need a for loop for the bookmarks depending on returned postIds
-					for(var i=0;i<postIds.length; i++){
-						var postId = postIds[i];
-						chatterapi(info, tab, type, postId);
-					}
-				} else {
-					alert("ERROR check the console log")
-				}
-
-			}
-		});
-}
-
-// Run all soql queries through this function
-// Not usef at the moment
-function soqlapi(info, tab, query, type) {
-	console.log("query is: " + query)
-	console.log("encoded query is: "+encodeURIComponent(query));
-
-	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/query/?q=" + encodeURIComponent(query);
-
-	$.ajax({
-		url: url,
-		method: 'GET',
-		contentType: 'application/json;charset=UTF-8',
-		dataType: 'json',
-		beforeSend: function (xhr) {
-			xhr.setRequestHeader("Authorization", "Bearer " + sid);
-		},
-		success: function (result) {
-			if (type == 'followAll') {
-				if (result && result.records[0]) {
-					//console.log(result.records[0]);
-				} else {
-					alert("You are not on a work item or case");
-				}
-			} else if (type == 'gus_links') {
-				if (result && result.records[0]) {
-
-				} else {
-					alert("Something went wrong, possibly not on case page");
-				}
-			}
-		},
-		error: function (jqXHR, textStatus, errorThrown) {
-			alert("Error: " + errorThrown)
-			console.log(jqXHR.status + ' : ' + errorThrown);
-		}
-	});
-}
-
-
-function soqlResultHandler(response) {
-
-	console.log("Got soql response: " + response);
-
-
+function followAll(info, tab, postId) {
+	
+	if (info !== null && (info.menuItemId === "followAll" || info.menuItemId === "unfollowAll")) {
+		var type = 'getFeeds';
+		chatterapi(info, tab, type, null);
+	}
 }
 
 // Run all soql queries through this function
@@ -128,14 +61,17 @@ function chatterapi(info, tab, type, postId) {
 	console.log('Chatter API called');
 	
 	// variables for later
-	var patchData
-	var bookmarkJson = {"isBookmarkedByCurrentUser" : true};
+	var patchData;
+	var method;
+	var recordUrl = tab.url;
+	var recordIdentifier = null;
+	var bookmarkJson = {"isBookmarkedByCurrentUser" : null};
 	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/";
 	
 	//formatting the url for bookmarks and appending postId
 	//doesn't look like we can bulk request this
 	//adding more chatter functions here will need to look at other check
-	if (type == 'followAll') {
+	if (type == 'followAll' && postId!=null) {
 		url+="feed-elements/"+postId+"/capabilities/bookmarks";
 		if (info.menuItemId === "followAll") {
 			bookmarkJson.isBookmarkedByCurrentUser = true;
@@ -147,12 +83,17 @@ function chatterapi(info, tab, type, postId) {
 				alert('Error check console log');
 			}
 		patchData = bookmarkJson;
+		method = 'PATCH'
 		console.log('Chatter URL: '+url);
+	} else if (type == 'getFeeds' && postId==null && recordUrl != null) {
+		recordIdentifier = recordUrl.match(/\b[0-9a-zA-Z]{18}\b/g);
+		console.log("recordId: "+recordIdentifier);
+		url+="feeds/record/"+recordIdentifier+"/feed-elements"; 
 	}
 
 	$.ajax({
 		url: url,
-		method: 'PATCH',
+		method: method,
 		data: JSON.stringify(patchData),
 		contentType: 'application/json;charset=UTF-8',
 		dataType: 'json',
@@ -166,11 +107,27 @@ function chatterapi(info, tab, type, postId) {
 				} else {
 					console.log('Error please check console log');
 				}
-			} else if (type == 'followAll' && info.menuItemId === "unfollowAll") {
+			} else if (type == 'followAll' && info.menuItemId === "followAll") {
 				if (result) {
 					console.log('Following All Posts');
 				} else {
 					alert("Error please check console log");
+				}
+			} else if(type == 'getFeeds' && result.elements[0]) {
+				console.log('Time to bookmark posts');
+				console.log('Elements count: '+Object.keys(result.elements).length);
+				for(var i =0; i<Object.keys(result.elements).length;i++) {
+					// if it's aleady bookmarked don't do anything
+					// this point we should maybe check type on the element if bookmarks are supported
+					if(info.menuItemId === "followAll" && result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == false) {
+						postId = result.elements[i].id;
+						type = 'followAll';
+						chatterapi(info, tab, type, postId);
+					} else if (info.menuItemId === "unfollowAll" && result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == true) {
+						postId = result.elements[i].id;
+						type = 'followAll';
+						chatterapi(info, tab, type, postId);
+					}
 				}
 			}
 		},
