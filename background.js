@@ -32,7 +32,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 	// Don't confuse this with the context dodge listener
 	if (typeof request.msg !== 'undefined') {
-
+		console.log('request msg: '+request.msg);
       if (request.msg === "context_dodge") {
 
 			console.log("Context Menu Dodge Received!");
@@ -46,6 +46,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			console.log('We\'ve got an error over here');
 		}
   }
+});
+
+chrome.runtime.onConnect.addListener(function(port) {
+	console.assert(port.name === "followAll");
+	port.onMessage.addListener(function(msg){
+		if (msg.request === "followAll") {
+		console.log('follow all in background script');
+		}
+	});
 });
 
 function followAll(info, tab, postId) {

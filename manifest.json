@@ -44,12 +44,10 @@
         		"https://developmentsp-dev-ed.my.salesforce.com/*"
 			],
 			"js": [
+				"jquery.js",
 				"content-script.js"
 			]
 		}
-	],
-	"web_accessible_resources": [
-		"slds/assets/icons/utility/*"
 	],
 	"commands": {
 		"_execute_browser_action": {

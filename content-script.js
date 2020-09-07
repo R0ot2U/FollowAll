@@ -1,25 +1,39 @@
-let commentURL = null;
-let clickedEl = null;
-
 //Context menu dodge function, after onload
 chrome.runtime.sendMessage({ msg: "context_dodge" }, function () { });
 
+function checkingForButtonNodeLocation() {
+    var target = document.querySelectorAll('.slds-grid.forceActionsContainer')[0];
+    if(!target) {
+        //The node we need does not exist yet.
+        //Wait 500ms and try again
+        window.setTimeout(checkingForButtonNodeLocation,500);
+        return;
+	}
+	console.log('target: '+target);
+	
+	var button = document.createElement("button");
+	button.innerHTML = "Follow All";
+	button.setAttribute("id","followAllButton");
+	button.setAttribute("class","slds-button slds-button--neutral not-selected slds-not-selected uiButton");
+	button.addEventListener('click', followAll);
+
+	target.appendChild(button); 
+}
+
+checkingForButtonNodeLocation();
+
+
+
+function followAll() {
+	console.log('followAll in content script');
+	
+	var port = chrome.runtime.connect({name: "followAll"});
+	port.postMessage({request: "followAll"});
+}
+
 // Right click functionality
 document.body.addEventListener('mousedown', function (e) {
-
-	var targetID = e.target.getAttribute("data-id")
-
-	// right click to an element and element contains data id for comment
-	if (e.button === 2 && targetID !== null) {
-		commentURL = "https://org62.lightning.force.com/one/one.app#/sObject/" + targetID + "/view";
-		console.log("Comment URL found: " + commentURL);
-	}
-
-	var editableTarget = e.target.getAttribute("contenteditable")
-	if (e.button === 2 && editableTarget) {
-		clickedEl = e.target;
-	}
-
+	console.log('Right click function')
 });
 
 // receive message about context menu action
