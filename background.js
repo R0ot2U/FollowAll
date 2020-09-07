@@ -21,9 +21,7 @@ window.onload = function () {
 	console.log('OnLoad Fired');
 }
 
-
 let sid = null;
-let casedetails = null;
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
@@ -50,9 +48,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 chrome.runtime.onConnect.addListener(function(port) {
 	console.assert(port.name === "followAll");
-	port.onMessage.addListener(function(msg){
+	port.onMessage.addListener(function(msg,extra){
 		if (msg.request === "followAll") {
 		console.log('follow all in background script');
+		console.log('info.menuItemId: '+msg.info.menuItemId);
+		console.log('tab url: '+extra.sender.tab.url);
+		followAll(msg.info, extra.sender.tab,null);
 		}
 	});
 });

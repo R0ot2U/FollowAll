@@ -26,9 +26,9 @@ checkingForButtonNodeLocation();
 
 function followAll() {
 	console.log('followAll in content script');
-	
+	var info = {"menuItemId":"followAll"};
 	var port = chrome.runtime.connect({name: "followAll"});
-	port.postMessage({request: "followAll"});
+	port.postMessage({request: "followAll", info: info});
 }
 
 // Right click functionality
