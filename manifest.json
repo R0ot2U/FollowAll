@@ -1,9 +1,9 @@
 {
-	"name": "Work Follow All",
+	"name": "Chatter Enhancement Suite",
 	"version": "1.0",
 	"manifest_version": 2,
 	"content_security_policy": "script-src 'self' ; object-src 'self'",
-	"description": "Follow all work feed posts",
+	"description": "Enhance your chatter experience",
 	"browser_action": {
 		"default_icon": "icon.png",
 		"default_title": "Follow All",
@@ -19,14 +19,9 @@
 		"activeTab",
 		"cookies",
 		"storage",
-		"clipboardWrite",
-		"clipboardRead",
 		"webNavigation",
-		"https://org62.my.salesforce.com/*",
-		"https://org62.lightning.force.com/*",
-    	"https://gus.my.salesforce.com/*",
-    	"https://developmentsp-dev-ed.lightning.force.com/*",
-    	"https://developmentsp-dev-ed.my.salesforce.com/*"
+		"https://*.my.salesforce.com/*",
+		"https://*.lightning.force.com/*"
 	],
 	"background": {
 		"scripts": [
@@ -37,11 +32,8 @@
 	"content_scripts": [
 		{
 			"matches": [
-				"https://org62.my.salesforce.com/*",
-				"https://org62.lightning.force.com/*",
-        		"https://gus.my.salesforce.com/*",
-        		"https://developmentsp-dev-ed.lightning.force.com/*",
-        		"https://developmentsp-dev-ed.my.salesforce.com/*"
+				"https://*.my.salesforce.com/*",
+				"https://*.lightning.force.com/*"
 			],
 			"js": [
 				"jquery.js",

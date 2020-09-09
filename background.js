@@ -15,30 +15,23 @@ chrome.contextMenus.create({
 });
 
 ////////////////////////////
-
 // on load function
 window.onload = function () {
-	console.log('OnLoad Fired');
+	//console.log('OnLoad Fired');
 }
 
 let sid = null;
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-
-  console.log("Open view: " + request.msg);
-  console.log("request: " + request);
-
 	// Don't confuse this with the context dodge listener
 	if (typeof request.msg !== 'undefined') {
 		console.log('request msg: '+request.msg);
       if (request.msg === "context_dodge") {
-
 			console.log("Context Menu Dodge Received!");
-
+			//need to make this work for ANY salesforce org
 			chrome.cookies.get({ "url": "https://developmentsp-dev-ed.my.salesforce.com", "name": "sid" }, function (f) {
 				sid = f.value;
 	  		});
-	  
 		}
 		else {
 			console.log('We\'ve got an error over here');
@@ -50,25 +43,42 @@ chrome.runtime.onConnect.addListener(function(port) {
 	console.assert(port.name === "followAll");
 	port.onMessage.addListener(function(msg,extra){
 		if (msg.request === "followAll") {
-		console.log('follow all in background script');
-		console.log('info.menuItemId: '+msg.info.menuItemId);
-		console.log('tab url: '+extra.sender.tab.url);
-		followAll(msg.info, extra.sender.tab,null);
+			followAll(msg.info, extra.sender.tab,null);
+		} else if (msg.request === "getFeeds") {
+			// right now this is always returning undefined and then false so while we are checking everything fine
+			// because the result is async we are just continuing without caring about it. Need to find a way
+			// to wait or make it async wait - haven't done this yet so going to have to learn.
+			var alreadyFollowed = getFeeds(msg.info, extra.sender.tab);
+				console.log('alreadyFollowed value: '+alreadyFollowed);
+				if (alreadyFollowed === true) {
+				port.postMessage({response: 'true'});
+				} else {
+					port.postMessage({response: 'false'});
+				}
 		}
 	});
 });
 
 function followAll(info, tab, postId) {
-	
 	if (info !== null && (info.menuItemId === "followAll" || info.menuItemId === "unfollowAll")) {
-		var type = 'getFeeds';
+		var type = 'follow';
 		chatterapi(info, tab, type, null);
+	}
+}
+
+function getFeeds(info, tab) {
+	if (info !== null && info.menuItemId === "getFeeds") {
+		var type = 'getFeeds';
+		console.log('getFeeds function');
+		var alreadyFollowed = chatterapi(info, tab, type, null);
+		console.log('alreadyFollowed in getFeeds(): '+alreadyFollowed)
+		return alreadyFollowed;
 	}
 }
 
 // Run all soql queries through this function
 function chatterapi(info, tab, type, postId) {
-	console.log('Chatter API called');
+	//console.log('Chatter API called');
 	
 	// variables for later
 	var patchData;
@@ -80,7 +90,7 @@ function chatterapi(info, tab, type, postId) {
 	
 	//formatting the url for bookmarks and appending postId
 	//doesn't look like we can bulk request this
-	//adding more chatter functions here will need to look at other check
+	//adding more chatter functions here will need to look at other checks
 	if (type == 'followAll' && postId!=null) {
 		url+="feed-elements/"+postId+"/capabilities/bookmarks";
 		if (info.menuItemId === "followAll") {
@@ -94,10 +104,10 @@ function chatterapi(info, tab, type, postId) {
 			}
 		patchData = bookmarkJson;
 		method = 'PATCH'
-		console.log('Chatter URL: '+url);
-	} else if (type == 'getFeeds' && postId==null && recordUrl != null) {
+		//console.log('Chatter URL: '+url);
+	} else if ((type == 'follow' || type == 'getFeeds') && postId==null && recordUrl != null) {
 		recordIdentifier = recordUrl.match(/\b[0-9a-zA-Z]{18}\b/g);
-		console.log("recordId: "+recordIdentifier);
+		//console.log("recordId: "+recordIdentifier);
 		url+="feeds/record/"+recordIdentifier+"/feed-elements"; 
 	}
 
@@ -123,22 +133,36 @@ function chatterapi(info, tab, type, postId) {
 				} else {
 					alert("Error please check console log");
 				}
-			} else if(type == 'getFeeds' && result.elements[0]) {
-				console.log('Time to bookmark posts');
-				console.log('Elements count: '+Object.keys(result.elements).length);
+			} else if(type == 'follow' && result.elements[0]) {
 				for(var i =0; i<Object.keys(result.elements).length;i++) {
 					// if it's aleady bookmarked don't do anything
 					// this point we should maybe check type on the element if bookmarks are supported
-					if(info.menuItemId === "followAll" && result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == false) {
+					if(info.menuItemId === "followAll" 
+					&& result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == false) {
 						postId = result.elements[i].id;
 						type = 'followAll';
 						chatterapi(info, tab, type, postId);
-					} else if (info.menuItemId === "unfollowAll" && result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == true) {
+					} else if (info.menuItemId === "unfollowAll" 
+					&& result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == true) {
 						postId = result.elements[i].id;
 						type = 'followAll';
 						chatterapi(info, tab, type, postId);
 					}
 				}
+			} else if(type == 'getFeeds' && result.elements[0]) {
+				console.log('getting feeds');
+				var allFollowed;
+				for(var i=0; i<Object.keys(result.elements).length;i++) {
+					if(result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == false) {
+						console.log('outputing false');
+						allFollowed = false;
+					} else {
+						allFollowed = true;
+						console.log('outputing true');
+					}
+				}
+				console.log('allFollowed: '+allFollowed);
+				return allFollowed;
 			}
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
@@ -149,8 +173,5 @@ function chatterapi(info, tab, type, postId) {
 }
 
 function chatterrestResultHandler(response) {
-
 	console.log("Got chatter response: " + response);
-
-
 }
