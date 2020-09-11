@@ -21,7 +21,7 @@ function checkingForButtonNodeLocation() {
 	port.postMessage({request: "getFeeds", info: info});
 	port.onMessage.addListener(function(msg) {
 		console.log('msg response: '+msg.response);
-		if(msg.response === false){
+		if(msg.response == 'false'){
 			button.innerHTML = "UnFollow All";
 		} else {
 			button.innerHTML = "Follow All";

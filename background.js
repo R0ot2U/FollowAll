@@ -48,18 +48,16 @@ chrome.runtime.onConnect.addListener(function(port) {
 			// right now this is always returning undefined and then false so while we are checking everything fine
 			// because the result is async we are just continuing without caring about it. Need to find a way
 			// to wait or make it async wait - haven't done this yet so going to have to learn.
-			var alreadyFollowed = getFeeds(msg.info, extra.sender.tab);
-				console.log('alreadyFollowed value: '+alreadyFollowed);
-				if (alreadyFollowed === true) {
-				port.postMessage({response: 'true'});
+			/*var alreadyFollowed = getFeeds(msg.info, extra.sender.tab);
+				if (alreadyFollowed === false) {
+				port.postMessage({response: 'false'});
 				} else {
-					port.postMessage({response: 'false'});
-				}
+					port.postMessage({response: 'true'});
+				} */
 		}
 	});
 });
-
-function followAll(info, tab, postId) {
+function followAll(info, tab) {
 	if (info !== null && (info.menuItemId === "followAll" || info.menuItemId === "unfollowAll")) {
 		var type = 'follow';
 		chatterapi(info, tab, type, null);
@@ -71,12 +69,11 @@ function getFeeds(info, tab) {
 		var type = 'getFeeds';
 		console.log('getFeeds function');
 		var alreadyFollowed = chatterapi(info, tab, type, null);
-		console.log('alreadyFollowed in getFeeds(): '+alreadyFollowed)
 		return alreadyFollowed;
 	}
 }
 
-// Run all soql queries through this function
+// Run all chatterAPI queries through this function
 function chatterapi(info, tab, type, postId) {
 	//console.log('Chatter API called');
 	
@@ -161,7 +158,7 @@ function chatterapi(info, tab, type, postId) {
 						console.log('outputing true');
 					}
 				}
-				console.log('allFollowed: '+allFollowed);
+				console.log('allFollowed1: '+allFollowed);
 				return allFollowed;
 			}
 		},
