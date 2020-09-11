@@ -14,12 +14,6 @@ chrome.contextMenus.create({
 	id: "unfollowAll"
 });
 
-////////////////////////////
-// on load function
-window.onload = function () {
-	//console.log('OnLoad Fired');
-}
-
 let sid = null;
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -39,51 +33,24 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
-chrome.runtime.onConnect.addListener(function(port) {
-	console.assert(port.name === "followAll");
-	port.onMessage.addListener(function(msg,extra){
-		if (msg.request === "followAll") {
-			followAll(msg.info, extra.sender.tab,null);
-		} else if (msg.request === "getFeeds") {
-			// right now this is always returning undefined and then false so while we are checking everything fine
-			// because the result is async we are just continuing without caring about it. Need to find a way
-			// to wait or make it async wait - haven't done this yet so going to have to learn.
-			/*var alreadyFollowed = getFeeds(msg.info, extra.sender.tab);
-				if (alreadyFollowed === false) {
-				port.postMessage({response: 'false'});
-				} else {
-					port.postMessage({response: 'true'});
-				} */
-		}
-	});
-});
-function followAll(info, tab) {
+function followAll(info, tab, postId) {
 	if (info !== null && (info.menuItemId === "followAll" || info.menuItemId === "unfollowAll")) {
-		var type = 'follow';
+		let type = 'follow';
 		chatterapi(info, tab, type, null);
 	}
 }
 
-function getFeeds(info, tab) {
-	if (info !== null && info.menuItemId === "getFeeds") {
-		var type = 'getFeeds';
-		console.log('getFeeds function');
-		var alreadyFollowed = chatterapi(info, tab, type, null);
-		return alreadyFollowed;
-	}
-}
-
-// Run all chatterAPI queries through this function
+// Run all soql queries through this function
 function chatterapi(info, tab, type, postId) {
 	//console.log('Chatter API called');
 	
 	// variables for later
-	var patchData;
-	var method;
-	var recordUrl = tab.url;
-	var recordIdentifier = null;
-	var bookmarkJson = {"isBookmarkedByCurrentUser" : null};
-	var url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/";
+	let patchData;
+	let method;
+	let recordUrl = tab.url;
+	let recordIdentifier = null;
+	let bookmarkJson = {"isBookmarkedByCurrentUser" : null};
+	let url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/";
 	
 	//formatting the url for bookmarks and appending postId
 	//doesn't look like we can bulk request this
@@ -146,20 +113,8 @@ function chatterapi(info, tab, type, postId) {
 						chatterapi(info, tab, type, postId);
 					}
 				}
-			} else if(type == 'getFeeds' && result.elements[0]) {
-				console.log('getting feeds');
-				var allFollowed;
-				for(var i=0; i<Object.keys(result.elements).length;i++) {
-					if(result.elements[i].capabilities.bookmarks.isBookmarkedByCurrentUser == false) {
-						console.log('outputing false');
-						allFollowed = false;
-					} else {
-						allFollowed = true;
-						console.log('outputing true');
-					}
-				}
-				console.log('allFollowed1: '+allFollowed);
-				return allFollowed;
+			} else {
+				console.log('nope');
 			}
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
