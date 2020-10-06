@@ -1,5 +1,3 @@
-///// Case Details /////
-
 chrome.contextMenus.create({
 	title: "Follow All",
 	contexts: ["page"],
@@ -23,7 +21,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       if (request.msg === "context_dodge") {
 			console.log("Context Menu Dodge Received!");
 			//need to make this work for ANY salesforce org
-			chrome.cookies.get({ "url": "https://developmentsp-dev-ed.my.salesforce.com", "name": "sid" }, function (f) {
+			chrome.cookies.get({ "url": "https://gus.my.salesforce.com", "name": "sid" }, function (f) {
 				sid = f.value;
 	  		});
 		}
@@ -50,7 +48,7 @@ function chatterapi(info, tab, type, postId) {
 	let recordUrl = tab.url;
 	let recordIdentifier = null;
 	let bookmarkJson = {"isBookmarkedByCurrentUser" : null};
-	let url = "https://developmentsp-dev-ed.my.salesforce.com/services/data/v49.0/chatter/";
+	let url = "https://gus.my.salesforce.com/services/data/v49.0/chatter/";
 	
 	//formatting the url for bookmarks and appending postId
 	//doesn't look like we can bulk request this

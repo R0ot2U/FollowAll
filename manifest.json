@@ -18,7 +18,6 @@
 		"tabs",
 		"activeTab",
 		"cookies",
-		"storage",
 		"webNavigation",
 		"https://*.my.salesforce.com/*",
 		"https://*.lightning.force.com/*"

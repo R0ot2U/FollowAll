@@ -1,5 +1,5 @@
 # FollowAll
-Follow all top level posts in a record
+Follow all top level posts in a record (Only in GUS)
 
 ## Objects Supported:
 * Work (ADM_Work__c)
